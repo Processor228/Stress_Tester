@@ -12,13 +12,6 @@ class RoomCreate(RoomBase):
     pass
 
 
-"""{
-    "bruteforce_src": "print('hello')",
-    "test_gen_src": "print('test')",
-    "tested_gen_src": "print('contest me !')"
-}"""
-
-
 class Room(RoomBase):
     id: int
     owner_id: int

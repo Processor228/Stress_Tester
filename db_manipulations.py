@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.expression import update
 from bcrypt import hashpw
 
 import models
@@ -33,6 +34,14 @@ def create_user_room(db: Session, room: schemas.RoomCreate, user_id: int) -> sch
     db.commit()
     db.refresh(db_item)
     return db_item
+
+
+def updateCodeInRoom(db: Session, room: schemas.Room) -> schemas.Room:
+    db.query(models.Room).filter(models.Room.id == room.id).update(dict(bruteforce_src=room.bruteforce_src,
+                                                                        tested_src=room.tested_src,
+                                                                        test_gen_src=room.test_gen_src))
+    res = db.query(models.Room).filter(models.Room.id == room.id).first()
+    return res
 
 
 def get_room(db: Session, room_id: int) -> schemas.Room:
