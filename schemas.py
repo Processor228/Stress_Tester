@@ -14,7 +14,7 @@ class RoomCreate(RoomBase):
 
 class Room(RoomBase):
     id: int
-    owner_id: int
+    user_id: int
 
     class Config:
         orm_mode = True
@@ -22,7 +22,7 @@ class Room(RoomBase):
 
 class UserBase(BaseModel):
     email: str
-    name: str
+    username: str
     role: int
 
 
@@ -33,7 +33,16 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     role: int
-    Rooms: list[Room] = []
+    rooms: list[Room] = []
 
     class Config:
         orm_mode = True
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    username: str | None = None
