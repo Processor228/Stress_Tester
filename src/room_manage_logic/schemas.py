@@ -1,11 +1,16 @@
 from pydantic import BaseModel
 
 
+class Code(BaseModel):
+    code_src: str
+    lang: str
+
+
 class RoomBase(BaseModel):
-    bruteforce_src: str
-    test_gen_src: str
-    tested_src: str
-    # lang: str
+    bruteforce_src: Code
+    test_gen_src: Code
+    tested_src: Code
+    checker_src: Code
 
 
 class RoomCreate(RoomBase):
