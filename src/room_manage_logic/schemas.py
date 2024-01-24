@@ -6,11 +6,22 @@ class Code(BaseModel):
     lang: str
 
 
+class RoomUpdate(BaseModel):
+    bruteforce: Code
+    test_gen: Code
+    tested: Code
+    checker: Code
+
+
 class RoomBase(BaseModel):
-    bruteforce_src: Code
-    test_gen_src: Code
-    tested_src: Code
-    checker_src: Code
+    bruteforce_src: str
+    test_gen_src: str
+    tested_src: str
+    checker_src: str
+    bruteforce_lang: str
+    test_gen_lang: str
+    tested_lang: str
+    checker_lang: str
 
 
 class RoomCreate(RoomBase):
@@ -19,7 +30,6 @@ class RoomCreate(RoomBase):
 
 class Room(RoomBase):
     id: int
-    user_id: int
 
     class Config:
         orm_mode = True

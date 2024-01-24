@@ -1,4 +1,4 @@
-# Stress_Tester
+# Stress Tester
 
 This repository contains a backend for competitive programming 
 stress-testing platform. 
@@ -10,12 +10,11 @@ may wanna run some tests to figure out, whether their output coincide or, more i
 differ. This application (with some good UI) may come in handy for such problems. (This will be useful only in case there is just
 one correct output for an input)
 
+# Deployment procedure:
 
-Deployment procedure:
 
-
-Project structure:
-We have monolith there, the logic is separated between two modules: one handles room management 
+# Project structure:
+We have monolith here, the logic is separated between two modules: one handles room management 
 (just code files user wish to test) and stress-testing logic, where the most important
 stuff is. <br>
 Each module has:

@@ -12,4 +12,4 @@ router = APIRouter()
 @router.post("/test/run_room/{room_id}", response_model=schemas.TestingOutput)
 def run_room(room_id: int, db: Session = Depends(get_db)):
     room = room_crud.get_room(db, room_id)
-    return testing_impl.test_code(room)
+    return testing_impl.phony_implementation(room)

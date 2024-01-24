@@ -15,6 +15,10 @@ def create_room(db: Session = Depends(get_db)):
 
 @router.put("/update/{room_id}", response_model=schemas.Room)
 def update_room(room_id: int, room: schemas.RoomBase, db: Session = Depends(get_db)):
+    db_room = room_crud.get_room(db, room_id=room_id)
+    if db_room is None:
+        raise HTTPException(status_code=404, detail="Room not found")
+
     return room_crud.updateCodeInRoom(db, room, room_id)
 
 
@@ -26,7 +30,9 @@ def get_room(room_id: int, db: Session = Depends(get_db)):
     return db_room
 
 
-# TODO delete endpoint
 @router.delete("/delete/{room_id}", response_model=int)
-def delete_room():
-    pass
+def delete_room(room_id: int, db: Session = Depends(get_db)):
+    deleted = room_crud.delete_room(db, room_id)
+    if deleted == 0:
+        raise HTTPException(status_code=404, detail="Room to delete is not found")
+    return deleted
