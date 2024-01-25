@@ -1,7 +1,7 @@
 # Stress Tester
 
-This repository contains a backend for competitive programming 
-stress-testing platform. 
+This repository contains the backend part of the implementation
+of a competitive programming stress testing platform.
 
 What exactly is stress testing in CP? Let me explain...
 
@@ -26,7 +26,7 @@ Each module has:
 main.py contains the FastApi class instance and there all the modules endpoints are binded to it.<br>
 db_connection - connects to db.
 
-Seems easy and structured... let's see what others will say and me after a while...
+Seems to be easy and structured... let's see what I and others will say after a while...
 
 Running instance:
 Not yet deployed

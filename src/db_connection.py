@@ -3,8 +3,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 
-#  stashed postgres password as OS variable
-SQLALCHEMY_DATABASE_URL = f'postgresql://postgres:{os.environ["POSTGRES_PSW"]}@localhost:5432/Stress'
+#  stashed postgres password as OS variable ('dialect+driver://username:password@host:port/database')
+SQLALCHEMY_DATABASE_URL = f'postgresql://{os.environ["POSTGRES_USR"]}:{os.environ["POSTGRES_PSW"]}' \
+                          f'@{os.environ["POSTGRES_SOCKET"]}/{os.environ["POSTGRES_DB_NAME"]}'
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL
 )

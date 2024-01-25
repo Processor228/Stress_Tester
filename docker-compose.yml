@@ -3,6 +3,11 @@ version: '3.8'
 services:
   web:
     build: .
+    environment:
+      POSTGRES_PSW: key_root1234
+      POSTGRES_USR: postgres
+      POSTGRES_SOCKET: 127.0.0.1:5432
+      POSTGRES_DB_NAME: stress_db
     ports:
       - "80:80"
     depends_on:
@@ -13,10 +18,10 @@ services:
     container_name: db
     restart: always
     environment:
-      POSTGRES_DB: stressT
+      POSTGRES_DB: stress_db
       POSTGRES_USER: processor
       POSTGRES_PASSWORD: key_root1234
     ports:
-      - 5432:5432
+      - "5432:5432"
     volumes:
-      - postgres_db:/var/lib/postgresql/data
+      - db:/var/lib/postgresql/data
