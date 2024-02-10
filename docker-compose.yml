@@ -9,19 +9,21 @@ services:
       POSTGRES_SOCKET: 127.0.0.1:5432
       POSTGRES_DB_NAME: stress_db
     ports:
-      - "80:80"
+      - "8080:8080"
     depends_on:
       - db
 
   db:
     image: postgres:14
     container_name: db
-    restart: always
     environment:
       POSTGRES_DB: stress_db
-      POSTGRES_USER: processor
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: key_root1234
     ports:
       - "5432:5432"
     volumes:
       - db:/var/lib/postgresql/data
+
+volumes:
+  db:

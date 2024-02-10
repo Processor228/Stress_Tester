@@ -13,4 +13,4 @@ RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 # Copy the content of the local src directory to the working directory in the container
 COPY ./src /src
 
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8080"]

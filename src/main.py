@@ -8,9 +8,9 @@ from fastapi import Depends, FastAPI, HTTPException, status
 
 from .room_manage_logic.router import router as room_management_endpoints
 from .stress_testing_logic.router import router as stress_testing_endpoints
+from .stress_testing_logic.testing_impl import prepare_containers
 
-
-app = FastAPI()
+app = FastAPI(lifespan=prepare_containers)
 
 origins = [
     "*"
@@ -31,3 +31,4 @@ CONTAINERS_NOW: int = 0
 
 app.include_router(room_management_endpoints)
 app.include_router(stress_testing_endpoints)
+
