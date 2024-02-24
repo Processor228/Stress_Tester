@@ -9,8 +9,8 @@ class Lang(Enum):
     C = "C"
 
 
-def create_room(db: Session) -> schemas.Room:
-    db_item = models.Room(test_gen_src="", bruteforce_src="", tested_src="", checker_src="",
+def create_room(db: Session, user_id: int) -> schemas.Room:
+    db_item = models.Room(test_gen_src="", bruteforce_src="", tested_src="", checker_src="", user_id=user_id,
                           bruteforce_lang=Lang.PY.value, test_gen_lang=Lang.PY.value, tested_lang=Lang.PY.value,
                           checker_lang=Lang.PY.value)
     db.add(db_item)

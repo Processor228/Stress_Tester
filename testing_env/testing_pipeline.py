@@ -4,6 +4,7 @@ import argparse
 import enum
 
 #  TODO (Optionally) handle cases when files with provided filenames do not exist
+#  TODO (Would be great) apply 'Chain of responsibility' pattern in the pipeline
 
 
 class Filename(enum.Enum):
