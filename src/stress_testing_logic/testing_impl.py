@@ -28,7 +28,6 @@ def phony_implementation(room: room_schemas.Room) -> schemas.TestingOutput:
 @asynccontextmanager
 async def prepare_containers(app: FastAPI):
     global CONTAINERS_NOW, CONTAINERS_MAX, mutexes, docker_client
-    #    TODO capturing of container's id on creating, put it into the array
     docker_client = docker.client.from_env()
 
     for idx in range(CONTAINERS_MAX):
@@ -51,10 +50,10 @@ async def prepare_containers(app: FastAPI):
 
 
 def cp_code_into_container(container, room: room_schemas.Room):
-    data = [("bru.cpp", room.bruteforce_src),
-            ("opt.cpp", room.tested_src),
-            ("gen.cpp", room.test_gen_src),
-            ("che.cpp", room.checker_src)]
+    data = [(f"brute.{room.bruteforce_lang}", room.bruteforce_src),
+            (f"tested.{room.tested_lang}", room.tested_src),
+            (f"gener.{room.test_gen_lang}", room.test_gen_src),
+            (f"che.{room.checker_lang}", room.checker_src)]
 
     for piece in data:
         file_path, content = piece
@@ -62,13 +61,19 @@ def cp_code_into_container(container, room: room_schemas.Room):
         exec_id = container.exec_run(cmd, user='root')
 
 
-def run_testing(container) -> tuple[int, bytes]:
+def run_testing(container, brtfrs_ext, tested_ext, genrtr_ext) -> tuple[int, bytes]:
     """
         Initiates testing pipeline script inside the container
+    :param genrtr_ext:
+    :param brtfrs_ext:
+    :param tested_ext:
     :param container:
-    :return: tuple (int, bytes)
+    :return: tuple (int, bytes) - the return code of the program and it's stdout, in bytes.
     """
-    cmd = ['sh', '-c', f'bash testing_pipeline.sh']
+    cmd = ['sh', '-c',
+           f'python3 testing_pipeline.py -b brute.{brtfrs_ext} -o tested.{tested_ext} -g gener.{genrtr_ext}']
+    print(cmd)
+
     return container.exec_run(cmd)
 
 
@@ -88,17 +93,21 @@ def test_code(room: room_schemas.Room) -> schemas.TestingOutput:
     elapsed: str
     if mutex.acquire(True):
         try:
-            print("Acquired the mutex, container {} is running".format(idx_container))
+            # print("Acquired the mutex, container {} is running".format(idx_container))
             W_DIR = "/usr/test_env"
             container = containers[idx_container]
 
             cp_code_into_container(container, room)
 
             start_t = time.time()
-            result = run_testing(container)
+            result = run_testing(container,
+                                 brtfrs_ext=room.bruteforce_lang,
+                                 tested_ext=room.tested_lang,
+                                 genrtr_ext=room.test_gen_lang,
+                                 )
             end_t = time.time()
 
-            report = str(result[1])
+            report = result[1].decode("utf-8")
             elapsed = str(end_t - start_t)
         finally:
             mutex.release()

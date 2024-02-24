@@ -12,6 +12,46 @@ one correct output for an input)
 
 # Deployment procedure:
 
+Clone the repository (or pull the changes)
+
+Install what's required:
+```
+pip install -r requirements.txt
+```
+
+Set up the environment variables:
+```
+export POSTGRES_PSW="root123"
+export POSTGRES_USR="postgres"
+export POSTGRES_SOCKET="localhost:5432"
+export POSTGRES_DB_NAME="Stress"
+```
+
+### Make sure you have docker installed
+
+Build the testing sandbox image:
+```
+docker build -t sandbox_container testing_env/
+```
+
+Start the app using uvicorn:
+
+If locally:
+```
+uvicorn src.main:app
+```
+
+If available in the net
+```
+uvicorn src.main:app --reload
+```
+
+#### Deployment with docker:
+
+```
+Will be soon ...
+```
+
 
 # Project structure:
 We have monolith here, the logic is separated between two modules: one handles room management 
@@ -28,6 +68,5 @@ db_connection - connects to db.
 
 Seems to be easy and structured... let's see what I and others will say after a while...
 
-Running instance:
+# Running instance:
 Not yet deployed
-

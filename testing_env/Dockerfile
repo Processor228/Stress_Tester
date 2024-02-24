@@ -8,4 +8,4 @@ RUN apk add --no-cache bash
 
 WORKDIR /usr/test_env
 
-COPY testing_pipeline.sh .
+COPY testing_pipeline.py .
