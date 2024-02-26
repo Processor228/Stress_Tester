@@ -3,54 +3,13 @@
 This repository contains the backend part of the implementation
 of a competitive programming stress testing platform.
 
-What exactly is stress testing in CP? Let me explain...
+What exactly is stress testing in Competitive Programming? Let me explain...
 
 Suppose you have a solution to some problem A that you are very sure of (a bruteforce, for instance). And you have a solution B for that problem that (maybe more optimal) you are not sure of. So, you 
 may wanna run some tests to figure out, whether their output coincide or, more importantly,
 differ. This application (with some good UI) may come in handy for such problems. (This will be useful only in case there is just
 one correct output for an input)
 
-# Deployment procedure:
-
-Clone the repository (or pull the changes)
-
-Install what's required:
-```
-pip install -r requirements.txt
-```
-
-Set up the environment variables:
-```
-export POSTGRES_PSW="root123"
-export POSTGRES_USR="postgres"
-export POSTGRES_SOCKET="localhost:5432"
-export POSTGRES_DB_NAME="Stress"
-```
-
-### Make sure you have docker installed
-
-Build the testing sandbox image:
-```
-docker build -t sandbox_container testing_env/
-```
-
-Start the app using uvicorn:
-
-If locally:
-```
-uvicorn src.main:app
-```
-
-If available in the net
-```
-uvicorn src.main:app --reload
-```
-
-#### Deployment with docker:
-
-```
-Will be soon ...
-```
 
 
 # Project structure:
@@ -68,5 +27,3 @@ db_connection - connects to db.
 
 Seems to be easy and structured... let's see what I and others will say after a while...
 
-# Running instance:
-Not yet deployed
