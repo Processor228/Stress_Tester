@@ -25,5 +25,8 @@ Each module has:
 main.py contains the FastApi class instance and there all the modules endpoints are binded to it.<br>
 db_connection - connects to db.
 
+There also is a directory "testing_env". It has Dockerfile for lightweight alpineOS-based container, which is used as testing sandbox. It has "testing_pipeline.py" code that drives the testing procedure.
+
+
 Seems to be easy and structured... let's see what I and others will say after a while...
 
