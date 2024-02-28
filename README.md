@@ -13,9 +13,9 @@ one correct output for an input)
 
 
 # Project structure:
-We have monolith here, the logic is separated between two modules: one handles room management 
+We have a monolith here, the logic is separated between multiple modules: one handles room management 
 (just code files user wish to test) and stress-testing logic, where the most important
-stuff is. <br>
+stuff is. Also there are user management, and OAuth modules. <br>
 Each module has:
 - schemas.py - for types used in the module
 - file with helping procedures (e.g. crud or like testing implementation)
@@ -25,7 +25,7 @@ Each module has:
 main.py contains the FastApi class instance and there all the modules endpoints are binded to it.<br>
 db_connection - connects to db.
 
-There also is a directory "testing_env". It has Dockerfile for lightweight alpineOS-based container, which is used as testing sandbox. It has "testing_pipeline.py" code that drives the testing procedure.
+There also is directory "testing_env". It has Dockerfile for lightweight alpineOS-based container, which is used as testing sandbox. It has "testing_pipeline.py" code that drives the testing procedure.
 
 
 Seems to be easy and structured... let's see what I and others will say after a while...
