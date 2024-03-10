@@ -1,28 +1,27 @@
 import re
 import subprocess
 import argparse
-from enum import Enum
+from enum import Enum, auto
 from dataclasses import dataclass
 
 from abc import ABCMeta, abstractmethod
 
 #  TODO (Optionally) handle cases when files with provided filenames do not exist
-#  TODO (Would be great) apply 'Chain of responsibility' pattern in the pipeline
 
 
 class Filename(Enum):
-    bruteforce = "brute"
-    optimised = "optim"
-    generator = "gen"
-    testfile = "testcase.txt"
-    out1 = "out1"
-    out2 = "out2"
+    bruteforce = auto()
+    optimised = auto()
+    generator = auto()
+    testfile = auto()
+    out1 = auto()
+    out2 = auto()
 
 
 class FileType(Enum):
-    py = "py"
-    cpp = "cpp"
-    unsupported = "@"
+    py = auto()
+    cpp = auto()
+    unsupported = auto()
 
 
 class CompilationError(RuntimeError):
@@ -79,6 +78,21 @@ class ISrcCodeWorker(metaclass=ABCMeta):
         """"""
 
 
+class SrcChainStarter(ISrcCodeWorker):
+    """ Invoke chain via this class """
+    @staticmethod
+    def compile(payload: CodeFile):
+        SrcPythonWorker.compile(payload)
+
+    @staticmethod
+    def generate_tests(payload: CodeFile):
+        SrcPythonWorker.generate_tests(payload)
+
+    @staticmethod
+    def run(payload: CodeFile, out: str):
+        SrcPythonWorker.run(payload, out)
+
+
 class SrcPythonWorker(ISrcCodeWorker):
     """Python code handler"""
 
@@ -95,7 +109,7 @@ class SrcPythonWorker(ISrcCodeWorker):
 
         res = subprocess.run(["python3", f"{payload.name}.{payload.ext}"],
                              shell=False,
-                             stdout=open(file=Filename.testfile.value, mode="w"),
+                             stdout=open(file=Filename.testfile.name, mode="w"),
                              stderr=subprocess.PIPE)
 
         if res.returncode == 0:
@@ -113,7 +127,7 @@ class SrcPythonWorker(ISrcCodeWorker):
         res = subprocess.run(["python3", f"{payload.name}.{payload.ext}"],
                              shell=False,
                              stdout=open(file=out_name, mode="w"),
-                             stdin=open(file=Filename.testfile.value, mode="r"),
+                             stdin=open(file=Filename.testfile.name, mode="r"),
                              stderr=subprocess.PIPE)
 
         if res.returncode == 0:
@@ -150,7 +164,7 @@ class SrcCppWorker(ISrcCodeWorker):
 
         res = subprocess.run([f"./{payload.name}"],
                              shell=False,
-                             stdout=open(file=Filename.testfile.value, mode="w"),
+                             stdout=open(file=Filename.testfile.name, mode="w"),
                              stderr=subprocess.PIPE)
 
         if res.returncode == 0:
@@ -168,7 +182,7 @@ class SrcCppWorker(ISrcCodeWorker):
         res = subprocess.run([f"./{payload.name}"],
                              shell=False,
                              stdout=open(file=out_name, mode="w"),
-                             stdin=open(file=Filename.testfile.value, mode="r"),
+                             stdin=open(file=Filename.testfile.name, mode="r"),
                              stderr=subprocess.PIPE)
 
         if res.returncode == 0:
@@ -196,16 +210,15 @@ class SrcUnsupportedWorker(ISrcCodeWorker):
 
 
 def compile_solution(code: CodeFile):
-    print(code.ext)
-    SrcPythonWorker.compile(code)
+    SrcChainStarter.compile(code)
 
 
 def generate_tests(gen_code: CodeFile) -> None:
-    SrcPythonWorker.generate_tests(gen_code)
+    SrcChainStarter.generate_tests(gen_code)
 
 
 def run_solution(code: CodeFile, out_name: str):
-    SrcPythonWorker.run(code, out_name)
+    SrcChainStarter.run(code, out_name)
 
 
 def compare_results(fname1: str, fname2: str) -> str:
