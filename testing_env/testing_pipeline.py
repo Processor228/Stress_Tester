@@ -1,16 +1,28 @@
 import re
 import subprocess
 import argparse
-import enum
+from enum import Enum
+from dataclasses import dataclass
+
+from abc import ABCMeta, abstractmethod
 
 #  TODO (Optionally) handle cases when files with provided filenames do not exist
 #  TODO (Would be great) apply 'Chain of responsibility' pattern in the pipeline
 
 
-class Filename(enum.Enum):
+class Filename(Enum):
     bruteforce = "brute"
     optimised = "optim"
     generator = "gen"
+    testfile = "testcase.txt"
+    out1 = "out1"
+    out2 = "out2"
+
+
+class FileType(Enum):
+    py = "py"
+    cpp = "cpp"
+    unsupported = "@"
 
 
 class CompilationError(RuntimeError):
@@ -18,27 +30,19 @@ class CompilationError(RuntimeError):
 
 
 class CodeFile:
-    def __init__(self, fname):
+    def __init__(self, fname: str):
         extension = determine_ext(fname)
-
-        if extension == FileType.unsupported:
-            raise NotImplementedError("This file type is unsupported.")
 
         self.ext: str = extension.name
         self.name: str = fname[:-len(self.ext) - 1:]
 
 
 class Room:
-    def __init__(self, **kwargs):
-        self.bruteforce = CodeFile(kwargs[Filename.bruteforce.name])
-        self.optim = CodeFile(kwargs[Filename.optimised.name])
-        self.gen = CodeFile(kwargs[Filename.generator.name])
-
-
-class FileType(enum.Enum):
-    py = "py"
-    cpp = "cpp"
-    unsupported = "@"
+    def __init__(self, bruteforce: str, optimised: str, generator: str):
+        print(bruteforce, optimised, generator)
+        self.bruteforce = CodeFile(bruteforce)
+        self.optimised = CodeFile(optimised)
+        self.generator = CodeFile(generator)
 
 
 def determine_ext(name: str) -> FileType:
@@ -53,61 +57,155 @@ def determine_ext(name: str) -> FileType:
     return FileType.unsupported
 
 
-def compile_solution(code: CodeFile) -> None:
-    if code.ext == FileType.py.name:
-        # no need to compile python code
-        return
+class ISrcCodeWorker(metaclass=ABCMeta):
+    """ This is implementation of chain of responsibility pattern, where programming language handler is a successor.
 
-    if code.ext == FileType.cpp.name:
-        res = subprocess.run(["g++", f"{code.name}.{code.ext}", "-o", f"{code.name}"],
+    The Handler Interface that the Successors (Source code type handlers) should implement.
+    """
+
+    @staticmethod
+    @abstractmethod
+    def compile(payload: CodeFile):
+        """A method to implement"""
+
+    @staticmethod
+    @abstractmethod
+    def generate_tests(payload: CodeFile):
+        """"""
+
+    @staticmethod
+    @abstractmethod
+    def run(payload: CodeFile, out: str):
+        """"""
+
+
+class SrcPythonWorker(ISrcCodeWorker):
+    """Python code handler"""
+
+    @staticmethod
+    def compile(payload: CodeFile):
+        if payload.ext != FileType.py.name:
+            return SrcCppWorker.compile(payload)
+
+    @staticmethod
+    @abstractmethod
+    def generate_tests(payload: CodeFile):
+        if payload.ext != FileType.py.name:
+            return SrcCppWorker.generate_tests(payload)
+
+        res = subprocess.run(["python3", f"{payload.name}.{payload.ext}"],
                              shell=False,
-                             capture_output=True)
-
-    if res.returncode != 0:
-        print(res.stderr.decode('utf-8'))
-        raise CompilationError("Cpp solution failed to compile")
-
-
-def generate_tests(gen_code: CodeFile) -> None:
-    gen_name, gen_ext = gen_code.name, gen_code.ext
-    test_name: str = "testcase.txt"
-
-    if gen_ext == FileType.py.name:
-        res = subprocess.run(["python3", f"{gen_name}.{gen_ext}"],
-                             shell=False,
-                             stdout=open(file=test_name, mode="w"),
+                             stdout=open(file=Filename.testfile.value, mode="w"),
                              stderr=subprocess.PIPE)
 
-    if gen_ext == FileType.cpp.name:
-        res = subprocess.run([f"./{gen_name}"],
-                             shell=False,
-                             stdout=open(file=test_name, mode="w"),
-                             stderr=subprocess.PIPE)
+        if res.returncode == 0:
+            return
 
-    if res.returncode != 0:
         print(res.stderr.decode('utf-8'))
         raise RuntimeError("Generator has a Runtime Error")
 
+    @staticmethod
+    @abstractmethod
+    def run(payload: CodeFile, out_name: str):
+        if payload.ext != FileType.py.name:
+            return SrcCppWorker.run(payload, out_name)
 
-def run_solution(code: CodeFile, out_name: str):
-    test_name = "testcase.txt"
-    if code.ext == FileType.py.name:
-        res = subprocess.run(["python3", f"{code.name}.{code.ext}"],
+        res = subprocess.run(["python3", f"{payload.name}.{payload.ext}"],
                              shell=False,
                              stdout=open(file=out_name, mode="w"),
-                             stdin=open(file=test_name, mode="r"),
+                             stdin=open(file=Filename.testfile.value, mode="r"),
                              stderr=subprocess.PIPE)
 
-    if code.ext == FileType.cpp.name:
-        res = subprocess.run([f"./{code.name}"],
+        if res.returncode == 0:
+            return
+
+        print(res.stderr.decode('utf-8'))
+        raise RuntimeError(f"The {payload.name} code has Runtime Error")
+
+
+class SrcCppWorker(ISrcCodeWorker):
+    """C++ code handler"""
+
+    @staticmethod
+    def compile(payload: CodeFile):
+        if payload.ext != FileType.cpp.name:
+            return SrcUnsupportedWorker.compile(payload)
+
+
+        res = subprocess.run(["g++", f"{payload.name}.{payload.ext}", "-o", f"{payload.name}"],
+                             shell=False,
+                             capture_output=True)
+
+        if res.returncode == 0:
+            return
+
+        print(res.stderr.decode('utf-8'))
+        raise CompilationError("Cpp solution failed to compile")
+
+    @staticmethod
+    @abstractmethod
+    def generate_tests(payload: CodeFile):
+        if payload.ext != FileType.cpp.name:
+            return SrcUnsupportedWorker.generate_tests(payload)
+
+        res = subprocess.run([f"./{payload.name}"],
+                             shell=False,
+                             stdout=open(file=Filename.testfile.value, mode="w"),
+                             stderr=subprocess.PIPE)
+
+        if res.returncode == 0:
+            return
+
+        print(res.stderr.decode('utf-8'))
+        raise RuntimeError("Generator has a Runtime Error")
+
+    @staticmethod
+    @abstractmethod
+    def run(payload: CodeFile, out_name: str):
+        if payload.ext != FileType.cpp.name:
+            return SrcUnsupportedWorker.run(payload, out_name)
+
+        res = subprocess.run([f"./{payload.name}"],
                              shell=False,
                              stdout=open(file=out_name, mode="w"),
-                             stdin=open(file=test_name, mode="r"),
+                             stdin=open(file=Filename.testfile.value, mode="r"),
                              stderr=subprocess.PIPE)
 
-    if res.returncode != 0:
+        if res.returncode == 0:
+            return
+
         print(res.stderr.decode('utf-8'))
         raise RuntimeError(f"The {out_name} code has Runtime Error")
+
+
+class SrcUnsupportedWorker(ISrcCodeWorker):
+    """Unsupported code handler"""
+    @staticmethod
+    def compile(payload: CodeFile):
+        raise NotImplementedError("This file type is unsupported.")
+
+    @staticmethod
+    @abstractmethod
+    def generate_tests(payload: CodeFile):
+        raise NotImplementedError("This file type is unsupported.")
+
+    @staticmethod
+    @abstractmethod
+    def run(payload: CodeFile, out_name: str):
+        raise NotImplementedError("This file type is unsupported.")
+
+
+def compile_solution(code: CodeFile):
+    print(code.ext)
+    SrcPythonWorker.compile(code)
+
+
+def generate_tests(gen_code: CodeFile) -> None:
+    SrcPythonWorker.generate_tests(gen_code)
+
+
+def run_solution(code: CodeFile, out_name: str):
+    SrcPythonWorker.run(code, out_name)
 
 
 def compare_results(fname1: str, fname2: str) -> str:
@@ -128,30 +226,24 @@ parser.add_argument("-g", f"--{Filename.generator.name}", type=str, required=Tru
 
 
 def run():
-
     args = parser.parse_args()
-    room: Room
-    try:
-        room = Room(**vars(args))
-    except NotImplementedError as NE:
-        print(NE)
-        exit(1)
+
+    room = Room(**vars(args))
 
     testing_rounds = 5
-
     try:
         compile_solution(room.bruteforce)
-        compile_solution(room.gen)
-        compile_solution(room.optim)
+        compile_solution(room.generator)
+        compile_solution(room.optimised)
     except CompilationError as CE:
         print(CE)
         exit(1)
 
     for i in range(1, testing_rounds + 1):
         try:
-            generate_tests(room.gen)
+            generate_tests(room.generator)
 
-            run_solution(room.optim, "out_opt")
+            run_solution(room.optimised, "out_opt")
             run_solution(room.bruteforce, "out_bru")
         except RuntimeError as RE:
             print(RE)
@@ -159,19 +251,21 @@ def run():
 
         res = compare_results("out_opt", "out_bru")
 
-        if res != "":
-            print("Divergent test:")
-            testname = "testcase.txt"
-            try:
-                with open(testname, 'r') as file:
-                    content = file.read()
-                    print(content)
+        if res == "":
+            continue
 
-            except FileNotFoundError:
-                print("Tests were not generated.")
+        print("Divergent test:")
+        testname = "testcase.txt"
+        try:
+            with open(testname, 'r') as file:
+                content = file.read()
+                print(content)
 
-            print(f"Finished in {i} iterations")
-            return
+        except FileNotFoundError:
+            print("Tests were not generated.")
+
+        print(f"Finished in {i} iterations")
+        return
 
     print(f"Run {testing_rounds} testing iterations, found no differences.")
 
