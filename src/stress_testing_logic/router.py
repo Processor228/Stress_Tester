@@ -11,10 +11,13 @@ from src.stress_testing_logic import testing_impl, schemas
 import src.user_logic.schemas as user_schemas
 from src.user_logic.user_crud import get_current_user
 
+import asyncio
+
 router = APIRouter()
 
 
 @router.post("/test/run_room", response_model=schemas.TestingOutput)
-def run_room(current_user: Annotated[user_schemas.User, Depends(get_current_user)], db: Session = Depends(get_db)):
+async def run_room(current_user: Annotated[user_schemas.User, Depends(get_current_user)],
+                   db: Session = Depends(get_db)):
     room = room_crud.get_room(db, current_user.room.id)
-    return testing_impl.test_code(room)
+    return await testing_impl.test_code(room)

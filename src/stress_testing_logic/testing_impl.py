@@ -2,9 +2,10 @@ import random
 import subprocess
 import time
 from contextlib import asynccontextmanager
-from threading import Lock
+from asyncio import Lock
 import docker
 from docker.models.containers import Container
+import asyncio
 
 from fastapi import FastAPI
 
@@ -39,7 +40,6 @@ async def prepare_containers(app: FastAPI):
                                                        name=f'cont{idx}',
                                                        tty=True))
 
-        CONTAINERS_NOW += 1
     mutexes = [Lock() for _ in range(CONTAINERS_MAX)]
 
     yield  # instructions after the yield will be executed on shutdown
@@ -61,6 +61,9 @@ def cp_code_into_container(container, room: room_schemas.Room):
         exec_id = container.exec_run(cmd, user='root')
 
 
+# I want to run that as a task... such task that will block current function execution and let other
+# functions run.
+
 def run_testing(container, brtfrs_ext, tested_ext, genrtr_ext) -> tuple[int, bytes]:
     """
         Initiates testing pipeline script inside the container
@@ -72,12 +75,11 @@ def run_testing(container, brtfrs_ext, tested_ext, genrtr_ext) -> tuple[int, byt
     """
     cmd = ['sh', '-c',
            f'python3 testing_pipeline.py -b brute.{brtfrs_ext} -o tested.{tested_ext} -g gener.{genrtr_ext}']
-    print(cmd)
 
     return container.exec_run(cmd)
 
 
-def test_code(room: room_schemas.Room) -> schemas.TestingOutput:
+async def test_code(room: room_schemas.Room) -> schemas.TestingOutput:
     """
         This function runs the code for some room object, by neither building an image, nor starting a
         container, instead, it finds an available container (that is currently not busy with testing),
@@ -85,32 +87,38 @@ def test_code(room: room_schemas.Room) -> schemas.TestingOutput:
         :param room: room, the entry retrieved from the db for a particular id
         :return: testing verdict
     """
+    global CONTAINERS_MAX, CONTAINERS_NOW
+    idx_container = (CONTAINERS_NOW + 1) % CONTAINERS_MAX
+    CONTAINERS_NOW += 1
+    CONTAINERS_NOW %= CONTAINERS_MAX
 
-    idx_container = random.randint(0, CONTAINERS_MAX - 1)
     mutex = mutexes[idx_container]
 
     report: str
     elapsed: str
-    if mutex.acquire(True):
-        try:
-            # print("Acquired the mutex, container {} is running".format(idx_container))
-            W_DIR = "/usr/test_env"
-            container = containers[idx_container]
 
-            cp_code_into_container(container, room)
+    await mutex.acquire()
+    try:
+        W_DIR = "/usr/test_env"
+        container = containers[idx_container]
 
-            start_t = time.time()
-            result = run_testing(container,
-                                 brtfrs_ext=room.bruteforce_lang,
-                                 tested_ext=room.tested_lang,
-                                 genrtr_ext=room.test_gen_lang,
-                                 )
-            end_t = time.time()
+        cp_code_into_container(container, room)
 
-            report = result[1].decode("utf-8")
-            elapsed = str(end_t - start_t)
-        finally:
-            mutex.release()
+        start_t = time.time()
+        testing_coro = asyncio.to_thread(run_testing,
+                                         container=container,
+                                         brtfrs_ext=room.bruteforce_lang,
+                                         tested_ext=room.tested_lang,
+                                         genrtr_ext=room.test_gen_lang)
+
+        result = await asyncio.create_task(testing_coro)
+
+        end_t = time.time()
+
+        report = result[1].decode("utf-8")
+        elapsed = str(end_t - start_t)
+    finally:
+        mutex.release()
 
     return schemas.TestingOutput(
         elapsed_time=elapsed,
