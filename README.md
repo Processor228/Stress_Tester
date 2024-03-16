@@ -42,7 +42,7 @@ docker run \
     --network host \ 
     --env-file ./.env \
     -v /var/run/docker.sock:/var/run/docker.sock \
-     containerized_stress_back
+     containerized_stress_backend
 ```
 Why specifying ``-v /var/run/docker.sock:...`` ? <br>
 ``TL; DR``: to solve docker-in-docker situation. <br>
