@@ -25,6 +25,7 @@ archive.zip
 test_dir
 .prep_env.sh
 json_processer.py
+.env
 
 
 # vim temporary files
