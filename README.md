@@ -11,7 +11,6 @@ differ. This application (with some good UI) may come in handy for such problems
 one correct output for an input)
 
 
-
 # Project structure:
 We have a monolith here, the logic is separated between multiple modules: one handles room management 
 (just code files user wish to test) and stress-testing logic, where the most important
