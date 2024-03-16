@@ -10,6 +10,51 @@ may wanna run some tests to figure out, whether their output coincide or, more i
 differ. This application (with some good UI) may come in handy for such problems. (This will be useful only in case there is just
 one correct output for an input)
 
+# Deployment procedure:
+
+#### 1) Make sure you have docker installed
+
+#### 2) Clone the repository (or pull the changes)
+
+#### 3) Build the testing sandbox image:
+```
+docker build -t sandbox_container testing_env/
+```
+
+#### 4) Build the application image:
+```
+docker build . -t containerized_stress_backend
+```
+
+#### 5) Prepare a .env file
+```
+POSTGRES_PSW=Password
+POSTGRES_USR=postgres
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB_NAME=Stress
+OAUTH_SECRET_KEY=2d34fdsd345ggermfkwlm-efg2t-gfwerg-24
+```
+
+#### 6) Run the container
+```
+docker run \ 
+    --network host \ 
+    --env-file ./.env \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+     containerized_stress_back
+```
+Why specifying ``-v /var/run/docker.sock:...`` ? <br>
+``TL; DR``: to solve docker-in-docker situation. <br>
+Because now, the isolation of the tested solutions is carried out using docker containers. 
+So, the application launches a number of docker sandboxes and, 
+if necessary, puts code in them, runs a testing procedure, etc. In
+order not to install docker inside the container with the application, we
+simply specify the path to the socket of the external docker daemon. Thus, we have
+there is only one dockerd in the entire system, and it runs both
+the server application and the test sandboxes, and the application sends commands
+to it when needed.
+
 
 # Project structure:
 We have a monolith here, the logic is separated between multiple modules: one handles room management 
