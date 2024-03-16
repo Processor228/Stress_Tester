@@ -23,7 +23,7 @@ docker build -t sandbox_container testing_env/
 
 #### 4) Build the application image:
 ```
-docker build . -t containerized_stress_backend
+docker build -t containerized_stress_backend .
 ```
 
 #### 5) Prepare a .env file
@@ -57,19 +57,20 @@ to it when needed.
 
 
 # Project structure:
-We have a monolith here, the logic is separated between multiple modules: one handles room management 
-(just code files user wish to test) and stress-testing logic, where the most important
-stuff is. Also there are user management, and OAuth modules. <br>
+We have a monolith here, the logic is separated between multiple modules: one handles `room management` 
+(just code files user wish to test) and `stress-testing` logic, where the most important
+stuff is. Also there are `user management`, and `OAuth` modules. <br>
 Each module has:
-- schemas.py - for types used in the module
+- `schemas.py` - for types used in the module
 - file with helping procedures (e.g. crud or like testing implementation)
-- router - for endpoints
-- models - possibly db models
+- `router` - for endpoints
+- `models` - possibly db models
 
-main.py contains the FastApi class instance and there all the modules endpoints are binded to it.<br>
-db_connection - connects to db.
+`main.py` contains the FastApi class instance and there all the modules endpoints are binded to it.<br>
+`db_connection` - connects to db.
 
-There also is directory "testing_env". It has Dockerfile for lightweight alpineOS-based container, which is used as testing sandbox. It has "testing_pipeline.py" code that drives the testing procedure.
+---
+There also is directory `testing_env`. It has `Dockerfile` for lightweight alpineOS-based container, which is used as testing sandbox. It has "testing_pipeline.py" code that drives the testing procedure.
 
 
 Seems to be easy and structured... let's see what I and others will say after a while...
