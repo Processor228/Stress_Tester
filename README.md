@@ -10,7 +10,7 @@ may wanna run some tests to figure out, whether their output coincide or, more i
 differ. This application (with some good UI) may come in handy for such problems. (This will be useful only in case there is just
 one correct output for an input)
 
-# Deployment procedure:
+# Local Deployment procedure:
 
 #### 1) Make sure you have docker installed
 
