@@ -10,7 +10,7 @@ may wanna run some tests to figure out, whether their output coincide or, more i
 differ. This application (with some good UI) may come in handy for such problems. (This will be useful only in case there is just
 one correct output for an input)
 
-# Deployment procedure:
+# Local Deployment procedure:
 
 #### 1) Make sure you have docker installed
 
@@ -42,7 +42,7 @@ docker run \
     --network host \ 
     --env-file ./.env \
     -v /var/run/docker.sock:/var/run/docker.sock \
-     containerized_stress_back
+     containerized_stress_backend
 ```
 Why specifying ``-v /var/run/docker.sock:...`` ? <br>
 ``TL; DR``: to solve docker-in-docker situation. <br>
