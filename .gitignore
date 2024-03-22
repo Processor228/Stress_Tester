@@ -27,6 +27,9 @@ test_dir
 json_processer.py
 .env
 
+traefik.dev.toml
+treaefik.prod.toml
+
 
 # vim temporary files
 *~
