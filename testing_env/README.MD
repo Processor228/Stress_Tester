@@ -1,7 +1,7 @@
 - Dockerfile - testing sandbox dockerfile
 - testing pipeline .(py) - pipeline implementation
 
-Architecture of the pipeline: <br>
+What pipeline does: <br>
 
 1) Simply compile all the sources ('compile' function)
 2) Start n iterations:
