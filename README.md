@@ -61,7 +61,7 @@ dashboard = true
     entryPoint = "web"
 ```
 
-#### 6) Build testing sandbox
+#### 4) Build testing sandbox
 ```
 docker build -t sandbox_container testing_env/
 ```
