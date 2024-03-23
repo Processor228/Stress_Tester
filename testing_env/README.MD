@@ -1,5 +1,3 @@
-## Here we have
-
 - Dockerfile - testing sandbox dockerfile
 - testing pipeline .(py) - pipeline implementation
 
