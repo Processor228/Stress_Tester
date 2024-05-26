@@ -58,7 +58,9 @@ def cp_code_into_container(container, room: room_schemas.Room):
 
     for piece in data:
         file_path, content = piece
-        cmd = ['sh', '-c', f'echo {json.dumps(content)} > {file_path}']
+        escaped = content.replace("'", "\\'")
+        print(content, escaped)
+        cmd = ['sh', '-c', f'echo $\'{escaped}\' > {file_path}']
         exec_id = container.exec_run(cmd, user='root')
 
 
