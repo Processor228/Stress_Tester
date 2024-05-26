@@ -63,7 +63,7 @@ dashboard = true
 
 #### 4) Build testing sandbox
 ```
-docker build -t sandbox_container testing_env/
+docker build -t stress_container testing_env/
 ```
 
 #### 5) Run docker compose

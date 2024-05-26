@@ -1,3 +1,4 @@
+import json
 import random
 import subprocess
 import time
@@ -57,7 +58,7 @@ def cp_code_into_container(container, room: room_schemas.Room):
 
     for piece in data:
         file_path, content = piece
-        cmd = ['sh', '-c', f'echo "{content}" > {file_path}']
+        cmd = ['sh', '-c', f'echo {json.dumps(content)} > {file_path}']
         exec_id = container.exec_run(cmd, user='root')
 
 
